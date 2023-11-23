@@ -1,0 +1,61 @@
+@mixin content-center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.todo-list-item {
+  display: flex;
+  align-items: center;
+  padding: 12px 0;
+
+  //할일 전체 영역에 마우스를 호버했을 때, 쓰레기통 아이콘이 뜨게 할거임
+  &:hover .remove {
+    // .todo-list-item:hover .remove 를 의미하는 scss의 문법
+    display: block;
+  }
+
+  .check-circle {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 1px solid #9da1a7;
+    font-size: 24px;
+    margin-right: 20px;
+    cursor: pointer; // 클릭할 수 있음을 피드백. 손가락 모양으로 커서가 변경됨
+
+    @include content-center;
+    // 위에서 선언한 애가 사용됨!
+
+    &.active {
+      border: 1px solid #38d9a9;
+      color: #38d9a9;
+    }
+  }
+
+  .text {
+    font-size: 21px;
+    color: #495057;
+    flex: 1;
+
+    &.finish {
+      color: #919396;
+      text-decoration: line-through;
+    }
+  }
+
+  .remove {
+    font-size: 28px;
+    cursor: pointer;
+    color: #f51b4f;
+
+    @include content-center();
+
+    display: none;
+    // remove에 호버가 발생하면 보이게 할것임
+
+    &:hover svg {
+      opacity: 0.6;
+    }
+  }
+}

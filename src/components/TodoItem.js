@@ -3,13 +3,13 @@ import { MdDelete, MdDone } from 'react-icons/md';
 import './scss/TodoItem.scss';
 import cn from 'classnames';
 
-const TodoItem = ({ item, remove, check }) => {
+const TodoItem = ({ item, remove, check, count }) => {
   const { id, title, done } = item;
   return (
     <li className='todo-list-item'>
       <div
         className={cn('check-circle', { active: done })}
-        onClick={() => check(id)}
+        onClick={() => check(id, done)}
       >
         <MdDone />
       </div>

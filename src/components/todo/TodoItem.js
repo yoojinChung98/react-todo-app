@@ -13,10 +13,10 @@ const TodoItem = ({ item, remove, check, count }) => {
       >
         <MdDone />
       </div>
-      <span className={(cn('text'), { finish: done })}>{item.title}</span>
+      <span className={cn('text', { finish: done })}>{title}</span>
       <div
         className='remove'
-        onClick={() => remove(item.id)}
+        onClick={() => remove(id)}
       >
         <MdDelete />
       </div>

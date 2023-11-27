@@ -9,8 +9,13 @@ import {
 import { isValidDateValue } from '@testing-library/user-event/dist/utils';
 import React, { useState } from 'react';
 import { API_BASE_URL as BASE, USER } from '../../config/host-config';
+import { useNavigate } from 'react-router-dom';
 
 const Join = () => {
+  // 리다이렉트 사용하기 (리액트에서)
+  // 사실 리액트에서는 리디렉션이라는 개념이 없음! 그래서 여기에 입력하는 값에 따라 라우터가 반응하게 됨
+  const redirection = useNavigate();
+
   // 하단의 주소로 fetch 요청 보낼것임!
   const API_BASE_URL = BASE + USER;
 
@@ -97,13 +102,42 @@ const Join = () => {
 
   // 이메일 중복 체크 서버 통신 함수
   const fetchDuplicateCheck = (email) => {
-    fetch(`${API_BASE_URL}/check?email=${email}`);
+    let msg = '',
+      flag = false;
+    fetch(`${API_BASE_URL}/check?email=${email}`)
+      .then((res) => {
+        if (res.status === 200) {
+          return res.json();
+        }
+      })
+      .then((json) => {
+        // console.log(json);
+        if (json) {
+          // 중복됨
+          msg = '이메일이 중복되었습니다.';
+        } else {
+          // 중복 안됨
+          msg = '사용 가능한 이메일 입니다.';
+          flag = true;
+        }
+        // fetch 내부의 동작 가장 마지막에 동작하도록 하려면 then 절 내부로 가장 하단에 위치해야함
+        // fetch 함수 외부로 빼버리면 또 비동기니까 순서 꼬여벌임
+        saveInputState({
+          key: 'email',
+          inputValue: email,
+          msg,
+          flag,
+        });
+      })
+      .catch((err) => {
+        console.log('서버통신이 원활하지 않습니다.');
+      });
   };
 
   // 이메일 입력창 체인지 이벤트 핸들러
   const emailHandler = (e) => {
     const inputValue = e.target.value;
-    const emailRegex = /^[A-Za-z0-9_\.\-]+@[A-Za-z0-9\-]+\.[A-Za-z0-9\-]+$/;
+    const emailRegex = /^[A-Za-z0-9_\.\-]+@[A-Za-z0-9\-]+\.[A-Za-z0-9\-]+/;
 
     let msg;
     let flag = false;
@@ -127,21 +161,22 @@ const Join = () => {
 
   // 패스워드 입력창 체인지 이벤트 핸들러
   const passwordHandler = (e) => {
-    // 패스워드가 변경될 때마다 패스워드 확인 창을 비우고 시작할 것임.
-    // 하단의 확인 메시지와 correct flag를 초기화해줌.
-    setMessage({ ...message, passwordCheck: '' });
-    setCorrect({ ...correct, passwordCheck: false });
     // passwordHandler 는 렌더링 종료 후 호출되는 것이 보장됨(상식적으로)
     // 그래서 바닐라자바스크립트 문법으로 태그를 지목해보자!
     // 이벤트핸들러 함수 내부에서 지목하는 거라서 지목이 가능한 것~
     document.getElementById('password-check').value = '';
 
+    // 패스워드가 변경될 때마다 패스워드 확인 창을 비우고 시작할 것임.
+    // 하단의 확인 메시지와 correct flag를 초기화해줌.
+    setMessage({ ...message, passwordCheck: '' });
+    setCorrect({ ...correct, passwordCheck: false });
+
     const inputValue = e.target.value;
     const pwRegex =
       /^(?=.*[A-Za-z])(?=.*\d)(?=.*[$@$!%*#?&])[A-Za-z\d$@$!%*#?&]{8,20}$/;
 
-    let msg,
-      flag = false;
+    let msg;
+    let flag = false;
     if (!inputValue) {
       msg = '비밀번호는 필수입니다.';
     } else if (!pwRegex.test(inputValue)) {
@@ -161,8 +196,8 @@ const Join = () => {
 
   // 비밀번호 확인란 체인지 이벤트 처리!
   const pwCheckHandler = (e) => {
-    let msg,
-      flag = false;
+    let msg;
+    let flag = false;
     // 비밀번호 확인은 fetch로 안넘길 거니까 inputValue는 필요없음
 
     if (!e.target.value) {
@@ -192,12 +227,31 @@ const Join = () => {
     return true;
   };
 
+  // 회원가입 처리 서버 요청
+  const fetchSignUpPost = () => {
+    fetch(API_BASE_URL, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(userValue),
+    }).then((res) => {
+      if (res.status === 200) {
+        alert('회원가입에 성공했습니다.');
+        // 로그인 페이지로 리다이렉트
+        // window.location.href = '/login';
+        redirection('/login'); // 리액트에서 리다이렉트 하는 방법.
+      } else {
+        alert('서버와의 통신이 원활하지 않습니다. 관리자에게 문의하세요.');
+      }
+    });
+  };
+
   // 회원가입 버튼 클릭 이벤트 핸들러
   const joinButtonClickHandler = (e) => {
     e.preventDefault();
 
     if (isValid()) {
       // 회원가입 서버 요청
+      fetchSignUpPost();
     } else {
       alert('입력란을 다시 확인해주세요.');
     }

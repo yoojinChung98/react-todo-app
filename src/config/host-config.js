@@ -4,7 +4,8 @@ const clientHostName = window.location.hostname; // 기본적으로 브라우저
 //백엔드 서버 호스트 이름
 let backEndHostName;
 
-if (clientHostName === 'localHost') {
+if (clientHostName === 'localhost') {
+  // localhost 는,,, 소문자야,, 유진아,,,
   // 개발 중
   backEndHostName = 'http://localhost:8181';
 } else if (clientHostName === 'spring.com') {

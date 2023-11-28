@@ -3,9 +3,24 @@ import TodoHeader from './TodoHeader';
 import TodoMain from './TodoMain';
 import TodoInput from './TodoInput';
 import './scss/TodoTemplate.scss';
+
 import { API_BASE_URL as BASE, TODO } from '../../config/host-config';
+import { useNavigate } from 'react-router-dom';
+import { getLoginUserInfo } from '../../utils/login-util';
 
 const TodoTemplate = () => {
+  const redirection = useNavigate();
+
+  // 로그인 인증 토큰 얻어오기
+  const { token } = getLoginUserInfo();
+
+  // fetch 요청 보낼 때 사용할 요청 헤더 설정
+  const requestHeader = {
+    'content-type': 'application/json',
+    // JWT 에 대한 인증 토큰이라는 타입을 선언 (토큰 값을 통해서 사용자가 누구인지 인식할 수 있도록 할 것임.) : Bearer : 해당 토큰의 타입이 무엇인지 알려줌.
+    Authorization: 'Bearer ' + token,
+  };
+
   // 서버에 할 일 목록(json)을 요청(fetch)해서 받아와야 함.
   // const API_BASE_URL = 'http://localhost:8181/api/todos'; // 기본 요청url을 변수화 시키겠다~ (host-config.js 파일에서 설정함.)
   const API_BASE_URL = BASE + TODO;
@@ -13,10 +28,10 @@ const TodoTemplate = () => {
   // todos 배열을 상태 관리
   const [todos, setTodos] = useState([]);
 
-  // id가 시쿼스 함수
+  // id값 시퀀스 함수 (DB 연동시키면 필요없게 됨.)
   const makeNewId = () => {
     if (todos.length === 0) return 1;
-    return todos[todos.length - 1].id + 1; // 맨 마지막 할일 객체의 id보다는 하나 크게
+    return todos[todos.length - 1].id + 1; // 맨 마지막 할일 객체의 id보다 하나 크게
   };
 
   /*
@@ -26,11 +41,9 @@ const TodoTemplate = () => {
  부모 컴포넌트에서 함수를 선언(매개변수 꼭 선언) -> props로 함수를 전달
  자식 컴포넌트에서 전달받은 함수를 호출하면서 매개값으로 데이터를 전달.
 */
-  const addTodo = (todoText) => {
+  const addTodo = async (todoText) => {
     const newTodo = {
-      // id: makeNewId(),
       title: todoText,
-      // done: false,
     }; // fetch를 이용해서 백엔드에 insert 요청 보내야 함.
 
     // todos.push(newTodo); (X) -> Ustate변수를 누가 이렇게 바꿔,,, 세터 써야지,,,
@@ -42,6 +55,16 @@ const TodoTemplate = () => {
     //   return [...oldtodos, newTodo];
     // });
 
+    const res = await fetch(API_BASE_URL, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(newTodo),
+    });
+
+    const json = await res.json();
+    setTodos(json.todos);
+
+    /*
     fetch(API_BASE_URL, {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
@@ -51,6 +74,7 @@ const TodoTemplate = () => {
       .then((json) => {
         setTodos(json.todos);
       });
+    */
   };
 
   // 할 일 삭제 처리 함수
@@ -93,8 +117,8 @@ const TodoTemplate = () => {
       method: 'PATCH',
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({
-        id: id,
         done: !done,
+        id: id,
       }),
     })
       .then((res) => res.json())
@@ -106,7 +130,10 @@ const TodoTemplate = () => {
 
   useEffect(() => {
     // 페이지가 처음 렌더링 됨과 동시에 할 일 목록을 서버에 요청해서 뿌려 주겠습니다.
-    fetch(API_BASE_URL)
+    fetch(API_BASE_URL, {
+      method: 'GET',
+      headers: requestHeader, // Header에 들은 JWT 의 내용을 헤더에 담아서 보냄.
+    })
       .then((res) => res.json())
       .then((json) => {
         console.log(json);

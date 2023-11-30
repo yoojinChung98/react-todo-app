@@ -1,10 +1,12 @@
 import React from 'react';
 import { MdDelete, MdDone } from 'react-icons/md';
-import './scss/TodoItem.scss';
 import cn from 'classnames';
 
-const TodoItem = ({ item, remove, check, count }) => {
+import './scss/TodoItem.scss';
+
+const TodoItem = ({ item, remove, check }) => {
   const { id, title, done } = item;
+
   return (
     <li className='todo-list-item'>
       <div

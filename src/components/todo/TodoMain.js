@@ -2,7 +2,7 @@ import React from 'react';
 import TodoItem from './TodoItem';
 import './scss/TodoMain.scss';
 
-const TodoMain = ({ todoList, remove, check, count }) => {
+const TodoMain = ({ todoList, remove, check }) => {
   return (
     <ul className='todo-list'>
       {todoList.map((todo) => (
@@ -11,7 +11,6 @@ const TodoMain = ({ todoList, remove, check, count }) => {
           item={todo}
           remove={remove}
           check={check}
-          count={count}
         />
       ))}
     </ul>
